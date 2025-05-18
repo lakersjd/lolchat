@@ -9,23 +9,27 @@
 <body>
   <div class="chat-container">
     <h1>ZeroX Chat</h1>
-    <div id="systemMsg">🔎 Searching for a stranger...</div>
+    <div id="systemMsg">🔍 Searching for a partner...</div>
+    <button id="cancelSearchBtn" style="display:none; margin-top:10px;">🔁 Try Again</button>🔎 Searching for a stranger...</div>
 
-    <div id="typingIndicator" style="display:none; font-style: italic; color: gray;"></div>
-    <div id="textChat" style="display: none;"> style="display:none; font-style: italic; color: gray;"></div>
+    <div id="typingIndicator" style="display:none;" class="chat-content" style="display:none; font-style: italic; color: gray;"></div>
+    <div id="textChat" style="display: none;" class="chat-content"> style="display:none; font-style: italic; color: gray;"></div>
       <div id="messages"></div>
       <input type="text" id="input" placeholder="Type your message..." />
       <button id="emojiBtn">😊</button>
       <button onclick="sendMessage()">Send</button>
     </div>
 
-    <div id="videoChat" style="display: none;">
+    <div id="videoChat" style="display: none;" class="chat-content">
       <div class="video-frame">
         <video id="localVideo" autoplay muted playsinline></video>
         <video id="remoteVideo" autoplay playsinline></video>
       </div>
     </div>
 
+    <div class="menu-bar" style="margin-bottom:10px;">
+      <button id="homeBtn">🏠 Home</button>
+    </div>
     <div id="controls" style="display: none;" class="controls">
   <button id="micToggleBtn">🎤 Mic On</button>
   <button id="screenShareBtn">🖥 Share Screen</button>

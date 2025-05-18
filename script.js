@@ -85,6 +85,7 @@ if (mode === "video") {
   });
 
   socket.on("ready", async () => {
+  showChatUI();
     playSound("connect");
     document.getElementById("systemMsg").innerText = "🔗 You're now connected to a stranger.";
     peerConnection = new RTCPeerConnection();
@@ -179,3 +180,31 @@ if (savedFontSize) {
   document.body.style.fontSize = savedFontSize;
   fontSizeSelect.value = savedFontSize;
 }
+
+function showChatUI() {
+  document.querySelectorAll(".chat-content").forEach(el => {
+    el.style.display = "block";
+  });
+  document.getElementById("systemMsg").innerText = "🔗 You're now connected to a stranger.";
+}
+
+let searchTimeout = setTimeout(() => {
+  if (!document.querySelector(".chat-content").style.display || document.querySelector(".chat-content").style.display === "none") {
+    document.getElementById("systemMsg").innerText = "⚠️ No match found. Try again or wait...";
+    document.getElementById("cancelSearchBtn").style.display = "inline-block";
+  }
+}, 30000);
+
+document.getElementById("cancelSearchBtn")?.addEventListener("click", () => {
+  location.reload();
+});
+
+// Home button
+document.getElementById("homeBtn")?.addEventListener("click", () => {
+  window.location.href = "index.html";
+});
+
+// Skip button
+document.getElementById("skipBtn")?.addEventListener("click", () => {
+  location.reload(); // Simply reload to requeue
+});
