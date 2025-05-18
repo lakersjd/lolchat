@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <!-- Sidebar Navigation -->
   <div id="sidebarNav" class="sidebar">
     <div class="menu-toggle" onclick="toggleSidebar()">☰</div>
     <div class="menu-links" id="menuLinks">
@@ -26,45 +27,63 @@
     </div>
   </div>
 
-  <div class="chat-container" id="chat">
-    <div id="textChat" style="display: none;">
-      <div id="messages"></div>
-      <input type="text" id="input" placeholder="Type a message..." />
-      <button onclick="sendMessage()">Send</button>
-      <input type="file" id="fileInput" />
-      <div id="emojiTray">
-        <button class="emoji-btn" onclick="insertEmoji('😄')">😄</button>
-        <button class="emoji-btn" onclick="insertEmoji('❤️')">❤️</button>
-        <button class="emoji-btn" onclick="insertEmoji('🔥')">🔥</button>
-        <button class="emoji-btn" onclick="insertEmoji('😂')">😂</button>
-        <button class="emoji-btn" onclick="insertEmoji('👍')">👍</button>
-      </div>
-    </div>
+  <!-- Video Chat Avatars -->
+  <div id="videoAvatars" style="display:none;margin-bottom:10px;">
+    <img id="myVideoAvatar" style="width:40px;height:40px;border-radius:50%;margin-right:10px;">
+    <img id="strangerVideoAvatar" style="width:40px;height:40px;border-radius:50%;">
+  </div>
 
-    <div id="videoChat" style="display: none;">
-      <div id="videoAvatars" style="margin-bottom: 10px;">
-        <img id="myVideoAvatar" style="width:40px;height:40px;border-radius:50%;margin-right:10px;">
-        <img id="strangerVideoAvatar" style="width:40px;height:40px;border-radius:50%;">
-      </div>
-      <div class="video-frame">
-        <video id="localVideo" autoplay muted playsinline></video>
-        <video id="remoteVideo" autoplay playsinline></video>
-      </div>
-      <div class="video-controls">
-        <button id="muteMicBtn">🎙️ Mute</button>
-        <button id="toggleCamBtn">📷 Off</button>
-      </div>
+  <!-- Video Chat Box -->
+  <div id="videoChat" style="display: none;">
+    <div class="video-frame">
+      <video id="localVideo" autoplay muted playsinline></video>
+      <video id="remoteVideo" autoplay playsinline></video>
     </div>
-
-    <div id="controls">
-      <button id="skipBtn">Skip</button>
-      <button id="stopBtn" onclick="location.reload()">Stop</button>
-      <button id="reportBtn">⚠ Report</button>
-      <button id="blockBtn">🚫 Block</button>
+    <div class="video-controls">
+      <button id="muteMicBtn">🎙️ Mute</button>
+      <button id="toggleCamBtn">📷 Off</button>
     </div>
   </div>
 
+  <!-- Text Chat Box -->
+  <div id="textChat" style="display: none;">
+    <div id="messages" class="fadein"></div>
+    <input type="text" id="input" placeholder="Type a message..." />
+    <button onclick="sendMessage()">Send</button>
+    <input type="file" id="fileInput" />
+    <div id="emojiTray">
+      <button class="emoji-btn" onclick="insertEmoji('😄')">😄</button>
+      <button class="emoji-btn" onclick="insertEmoji('❤️')">❤️</button>
+      <button class="emoji-btn" onclick="insertEmoji('🔥')">🔥</button>
+      <button class="emoji-btn" onclick="insertEmoji('😂')">😂</button>
+      <button class="emoji-btn" onclick="insertEmoji('👍')">👍</button>
+    </div>
+  </div>
+
+  <!-- Chat Controls -->
+  <div id="controls">
+    <button id="skipBtn">Skip</button>
+    <button id="stopBtn" onclick="location.reload()">Stop</button>
+    <button id="reportBtn">⚠ Report</button>
+    <button id="blockBtn">🚫 Block</button>
+  </div>
+
+  <!-- Scripts -->
   <script src="/socket.io/socket.io.js"></script>
   <script src="script.js"></script>
+  <script>
+    function toggleSidebar() {
+      document.getElementById("menuLinks").classList.toggle("show");
+    }
+    function setLanguage(lang) {
+      localStorage.setItem("lang", lang);
+      location.reload();
+    }
+    function insertEmoji(char) {
+      const input = document.getElementById("input");
+      input.value += char;
+      input.focus();
+    }
+  </script>
 </body>
 </html>
