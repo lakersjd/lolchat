@@ -3,32 +3,44 @@ const urlParams = new URLSearchParams(window.location.search);
 const mode = urlParams.get("mode");
 
 const gender = localStorage.getItem("gender");
-const interest = localStorage.getItem("interest");
+const interest = localStorage.getItem("tags");
+const language = localStorage.getItem("language");
 const country = localStorage.getItem("country");
+
 let localStream;
 let peerConnection;
-let countdownInterval;
 let micEnabled = true;
+let messageCooldown = false;
+let lastMsg = "";
+let repeatCount = 0;
 
-socket.emit("joinQueue", { gender, interest, country });
-
-socket.on("message", (msg) => {
-  const div = document.createElement("div");
-  div.textContent = "Stranger: " + msg;
-  document.getElementById("messages").appendChild(div);
-  document.getElementById("typingIndicator").style.display = "none";
-});
+socket.emit("joinQueue", { gender, interest, language, country });
 
 function sendMessage() {
   const input = document.getElementById("input");
-  const msg = input.value;
-  if (msg.trim() === "") return;
+  const msg = input.value.trim();
+  if (msg === "" || messageCooldown) return;
+
+  if (msg === lastMsg) {
+    repeatCount++;
+    if (repeatCount >= 3) {
+      alert("You are sending the same message repeatedly. You have been disconnected.");
+      location.reload();
+      return;
+    }
+  } else {
+    repeatCount = 0;
+  }
+
+  lastMsg = msg;
+  messageCooldown = true;
+  setTimeout(() => { messageCooldown = false; }, 1000);
+
   socket.emit("message", msg);
   const div = document.createElement("div");
   div.textContent = "You: " + msg;
   document.getElementById("messages").appendChild(div);
   input.value = "";
-  document.getElementById("typingIndicator").style.display = "none";
 }
 window.sendMessage = sendMessage;
 
@@ -46,11 +58,6 @@ socket.on("typing", () => {
   }, 2000);
 });
 
-if (mode === "text") {
-  document.getElementById("textChat").style.display = "block";
-  startCountdown();
-}
-
 if (mode === "video") {
   document.getElementById("videoChat").style.display = "block";
   const localVideo = document.getElementById("localVideo");
@@ -61,10 +68,10 @@ if (mode === "video") {
       localStream = stream;
       localVideo.srcObject = stream;
       socket.emit("ready");
+      runFaceDetection(); // hook in
     });
 
   socket.on("offer", async (offer) => {
-    playSound("connect");
     peerConnection = new RTCPeerConnection();
     addTracks();
     peerConnection.ontrack = (e) => remoteVideo.srcObject = e.streams[0];
@@ -72,6 +79,18 @@ if (mode === "video") {
     const answer = await peerConnection.createAnswer();
     await peerConnection.setLocalDescription(answer);
     socket.emit("answer", answer);
+    peerConnection.onicecandidate = (e) => {
+      if (e.candidate) socket.emit("ice-candidate", e.candidate);
+    };
+  });
+
+  socket.on("ready", async () => {
+    peerConnection = new RTCPeerConnection();
+    addTracks();
+    peerConnection.ontrack = (e) => remoteVideo.srcObject = e.streams[0];
+    const offer = await peerConnection.createOffer();
+    await peerConnection.setLocalDescription(offer);
+    socket.emit("offer", offer);
     peerConnection.onicecandidate = (e) => {
       if (e.candidate) socket.emit("ice-candidate", e.candidate);
     };
@@ -85,127 +104,60 @@ if (mode === "video") {
     peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
   });
 
-  socket.on("ready", async () => {
-  showChatUI();
-    playSound("connect");
-    document.getElementById("systemMsg").innerText = "🔗 You're now connected to a stranger.";
-    peerConnection = new RTCPeerConnection();
-    addTracks();
-    peerConnection.ontrack = (e) => remoteVideo.srcObject = e.streams[0];
-    const offer = await peerConnection.createOffer();
-    await peerConnection.setLocalDescription(offer);
-    socket.emit("offer", offer);
-    peerConnection.onicecandidate = (e) => {
-      if (e.candidate) socket.emit("ice-candidate", e.candidate);
-    };
-  });
-
   function addTracks() {
     localStream.getTracks().forEach(track => {
       peerConnection.addTrack(track, localStream);
     });
   }
-
-  startCountdown();
-}
-
-document.getElementById("emojiBtn")?.addEventListener("click", () => {
-  const input = document.getElementById("input");
-  input.value += "😊";
-  input.focus();
-});
-
-function startCountdown() {
-  const timerDisplay = document.getElementById("countdown");
-  let time = 180;
-  function updateTimer() {
-    const min = Math.floor(time / 60);
-    const sec = time % 60;
-    timerDisplay.textContent = `⏳ ${min}:${sec < 10 ? "0" + sec : sec}`;
-    if (time <= 0) {
-      clearInterval(countdownInterval);
-      location.reload();
-    }
-    time--;
-  }
-  updateTimer();
-  countdownInterval = setInterval(updateTimer, 1000);
 }
 
 document.getElementById("skipBtn")?.addEventListener("click", () => location.reload());
 document.getElementById("reportBtn")?.addEventListener("click", () => {
   socket.emit("report");
   alert("User reported.");
-  playSound("disconnect");
   location.reload();
 });
 document.getElementById("blockBtn")?.addEventListener("click", () => {
   socket.emit("block");
   alert("User blocked.");
-  playSound("disconnect");
   location.reload();
+});
+document.getElementById("homeBtn")?.addEventListener("click", () => {
+  location.href = "index.html";
+});
+
+socket.on("message", (msg) => {
+  const div = document.createElement("div");
+  div.textContent = "Stranger: " + msg;
+  document.getElementById("messages").appendChild(div);
 });
 
 socket.on("onlineCount", (count) => {
   document.getElementById("systemMsg").innerText = `👥 ${count} people online.`;
 });
 
-function playSound(type) {
-  const audio = new Audio(type === "connect" ? "connect.mp3" : "disconnect.mp3");
-  audio.play();
-}
-
-// Theme and Font Size Settings
-const themeSelect = document.getElementById("themeSelect");
-const fontSizeSelect = document.getElementById("fontSizeSelect");
-
-themeSelect.addEventListener("change", () => {
-  const theme = themeSelect.value;
-  document.body.classList.toggle("dark", theme === "dark");
-  localStorage.setItem("theme", theme);
-});
-
-fontSizeSelect.addEventListener("change", () => {
-  document.body.style.fontSize = fontSizeSelect.value;
-  localStorage.setItem("fontSize", fontSizeSelect.value);
-});
-
-// Load preferences
-const savedTheme = localStorage.getItem("theme");
-const savedFontSize = localStorage.getItem("fontSize");
-if (savedTheme) {
-  document.body.classList.toggle("dark", savedTheme === "dark");
-  themeSelect.value = savedTheme;
-}
-if (savedFontSize) {
-  document.body.style.fontSize = savedFontSize;
-  fontSizeSelect.value = savedFontSize;
-}
-
-function showChatUI() {
-  document.querySelectorAll(".chat-content").forEach(el => {
-    el.style.display = "block";
-  });
-  document.getElementById("systemMsg").innerText = "🔗 You're now connected to a stranger.";
-}
-
-let searchTimeout = setTimeout(() => {
-  if (!document.querySelector(".chat-content").style.display || document.querySelector(".chat-content").style.display === "none") {
-    document.getElementById("systemMsg").innerText = "⚠️ No match found. Try again or wait...";
-    document.getElementById("cancelSearchBtn").style.display = "inline-block";
+async function runFaceDetection() {
+  if (!window.faceapiLoaded) {
+    const script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.min.js";
+    script.onload = async () => {
+      await faceapi.nets.tinyFaceDetector.loadFromUri("https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model");
+      window.faceapiLoaded = true;
+      detectFace();
+    };
+    document.head.appendChild(script);
+  } else {
+    detectFace();
   }
-}, 30000);
+}
 
-document.getElementById("cancelSearchBtn")?.addEventListener("click", () => {
-  location.reload();
-});
-
-// Home button
-document.getElementById("homeBtn")?.addEventListener("click", () => {
-  window.location.href = "index.html";
-});
-
-// Skip button
-document.getElementById("skipBtn")?.addEventListener("click", () => {
-  location.reload(); // Simply reload to requeue
-});
+function detectFace() {
+  const video = document.getElementById("localVideo");
+  const interval = setInterval(async () => {
+    if (!video || video.paused || video.ended) return;
+    const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions());
+    if (!detections.length) {
+      console.warn("No face detected");
+    }
+  }, 3000);
+}
