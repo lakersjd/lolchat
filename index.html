@@ -2,15 +2,72 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ZeroX - Home</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
   <div class="container">
-    <h1>Welcome to ZeroX</h1>
-    <button onclick="window.location.href='chat.html?mode=text'">Text Chat</button>
-    <button onclick="window.location.href='chat.html?mode=video'">Video Chat</button>
+    <h1>ZeroX</h1>
+    <p>Chat anonymously with strangers around the world.</p>
+
+    <form id="preferenceForm">
+      <label>Gender:</label>
+      <select id="gender">
+        <option value="any">Any</option>
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+      </select><br><br>
+
+      <label>Interest:</label>
+      <input type="text" id="interest" placeholder="e.g., gaming, music"><br><br>
+
+      <div class="button-group">
+        <button type="submit" data-mode="text">Start Text Chat</button>
+        <button type="submit" data-mode="video">Start Video Chat</button>
+      </div>
+    </form>
+
+    <div class="theme-toggle">
+      <label>
+        <input type="checkbox" id="themeSwitcher" />
+        <span>🌞/🌙</span>
+      </label>
+    </div>
   </div>
+
+  <script>
+    const switcher = document.getElementById("themeSwitcher");
+    const body = document.body;
+    const theme = localStorage.getItem("theme");
+
+    if (theme === "light") {
+      body.classList.remove("dark");
+    } else {
+      body.classList.add("dark");
+      switcher.checked = true;
+    }
+
+    switcher.addEventListener("change", () => {
+      if (switcher.checked) {
+        body.classList.add("dark");
+        localStorage.setItem("theme", "dark");
+      } else {
+        body.classList.remove("dark");
+        localStorage.setItem("theme", "light");
+      }
+    });
+
+    const form = document.getElementById("preferenceForm");
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const gender = document.getElementById("gender").value;
+      const interest = document.getElementById("interest").value;
+      const mode = e.submitter.getAttribute("data-mode");
+      localStorage.setItem("gender", gender);
+      localStorage.setItem("interest", interest);
+      window.location.href = `chat.html?mode=${mode}`;
+    });
+  </script>
 </body>
 </html>

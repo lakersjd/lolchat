@@ -14,8 +14,16 @@
       <button onclick="sendMessage()">Send</button>
     </div>
     <div id="videoChat" style="display: none;">
-      <video id="localVideo" autoplay muted></video>
-      <video id="remoteVideo" autoplay></video>
+      <div class="video-frame">
+        <video id="localVideo" autoplay muted playsinline></video>
+        <video id="remoteVideo" autoplay playsinline></video>
+      </div>
+    </div>
+    <div id="controls">
+      <div id="countdown">⏳ 3:00</div>
+      <button id="skipBtn">Skip</button>
+      <button id="reportBtn">⚠ Report</button>
+      <button id="blockBtn">🚫 Block</button>
     </div>
   </div>
   <script src="/socket.io/socket.io.js"></script>
