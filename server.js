@@ -51,8 +51,6 @@ app.post("/admin", (req, res) => {
 let queue = [];
 
 io.on("connection", (socket) => {
-  io.emit("onlineCount", io.engine.clientsCount);
-
   socket.on("joinQueue", (prefs) => {
     socket.prefs = prefs;
 
@@ -90,7 +88,6 @@ io.on("connection", (socket) => {
 
   socket.on("report", () => {
     if (socket.partner) {
-    socket.partner.emit("partnerDisconnected");
       db.run("INSERT INTO reports (reporter_id, reported_id) VALUES (?, ?)", [socket.id, socket.partner.id]);
       socket.partner.disconnect();
     }
@@ -98,23 +95,14 @@ io.on("connection", (socket) => {
 
   socket.on("block", () => {
     if (socket.partner) {
-    socket.partner.emit("partnerDisconnected");
       db.run("INSERT INTO blocks (blocker_id, blocked_id) VALUES (?, ?)", [socket.id, socket.partner.id]);
       socket.partner.disconnect();
     }
   });
 
-  socket.on("typing", () => {
-    if (socket.partner) socket.partner.emit("strangerTyping");
-  });
-  socket.on("stopTyping", () => {
-    if (socket.partner) socket.partner.emit("strangerStopTyping");
-  });
-
-  socket.on("disconnect" , () => {
+  socket.on("disconnect", () => {
     queue = queue.filter(s => s !== socket);
-    if (socket.partner) socket.partner?.emit("strangerStopTyping");
-      socket.partner.partner = null;
+    if (socket.partner) socket.partner.partner = null;
   });
 });
 
