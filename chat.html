@@ -7,14 +7,24 @@
   <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
+  <div id="topStatus">
+    <span id="onlineCount">🟢 Online: 0</span>
+    <span id="chatCounter" style="margin-left: 20px;">💬 Chats: 0</span>
+    <span id="typingIndicator" style="margin-left: 20px;"></span>
+  </div>
+
   <div class="chat-container" id="chat">
     <div id="textChat" style="display: none;">
-      <div id="messages"></div>
+      <div id="messages"></div><input type="file" id="fileInput" style="display:none;" />
       <input type="text" id="input" placeholder="Type a message..." />
       <button onclick="sendMessage()">Send</button>
     </div>
     <div id="videoChat" style="display: none;">
       <div class="video-frame">
+    <div class="video-controls">
+      <button id="muteMicBtn">🎙️ Mute</button>
+      <button id="toggleCamBtn">📷 Off</button>
+    </div>
         <video id="localVideo" autoplay muted playsinline></video>
         <video id="remoteVideo" autoplay playsinline></video>
       </div>
