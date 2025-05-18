@@ -4,12 +4,13 @@ const mode = urlParams.get("mode");
 
 const gender = localStorage.getItem("gender");
 const interest = localStorage.getItem("interest");
+const country = localStorage.getItem("country");
 let localStream;
 let peerConnection;
 let countdownInterval;
 let micEnabled = true;
 
-socket.emit("joinQueue", { gender, interest });
+socket.emit("joinQueue", { gender, interest, country });
 
 socket.on("message", (msg) => {
   const div = document.createElement("div");
