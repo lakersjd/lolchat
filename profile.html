@@ -2,6 +2,51 @@
 <html lang="en">
 <head><meta charset="UTF-8"><title>Profile</title></head>
 <body>
+
+<div id="sidebarNav" class="sidebar">
+  <div class="menu-toggle" onclick="toggleSidebar()">☰</div>
+  <div class="menu-links" id="menuLinks">
+    <a href="/profile" data-t="profile">👤 Profile</a>
+    <a href="/friends" data-t="friends">🤝 Friends</a>
+    <a href="/login" data-t="login">🔐 Login</a>
+  
+<div style="margin-top:10px;">
+  <label style="color:white;"><span data-t="language">🌐 Language:</span></label>
+  <select id="languageSelect" onchange="setLanguage(this.value)">
+    <option value="en">English</option>
+    <option value="es">Español</option>
+    <option value="fr">Français</option>
+    <option value="de">Deutsch</option>
+    <option value="ar">العربية</option>
+  </select>
+</div>
+<script>
+  function setLanguage(lang) {
+    localStorage.setItem('lang', lang);
+    alert("Language set to " + lang + ". (Translation system coming soon!)");
+  }
+  document.addEventListener("DOMContentLoaded", () => {
+    const lang = localStorage.getItem("lang");
+    if (lang) {
+      document.getElementById("languageSelect").value = lang;
+    }
+  });
+</script>
+</div>
+</div>
+<script>
+  function toggleSidebar() {
+    document.getElementById("menuLinks").classList.toggle("show");
+  }
+</script>
+
+
+<div id="topNav" style="position:fixed;top:0;right:0;background:#333;padding:10px 15px;z-index:999;">
+  <a href="/profile" style="color:white;margin-right:10px;" data-t="profile">👤 Profile</a>
+  <a href="/friends" style="color:white;margin-right:10px;" data-t="friends">🤝 Friends</a>
+  <a href="/login" style="color:white;" data-t="login">🔐 Login</a>
+</div>
+
   <h2>Your Profile</h2>
   <form method="POST" action="/profile">
     <label>Avatar URL:</label><br>
@@ -10,5 +55,68 @@
     <textarea name="bio" rows="4" cols="40"></textarea><br><br>
     <button type="submit">Update Profile</button>
   </form>
+
+<script>
+  const translations = {
+    en: {
+      profile: "Profile",
+      friends: "Friends",
+      login: "Login",
+      language: "Language",
+      addFriend: "<span data-t="addFriend">Add Friend by Username:</span>",
+      pendingRequests: "<span data-t="pendingRequests">Pending Requests</span>",
+      acceptedFriends: "<span data-t="acceptedFriends">Accepted Friends</span>"
+    },
+    es: {
+      profile: "Perfil",
+      friends: "Amigos",
+      login: "Iniciar sesión",
+      language: "Idioma",
+      addFriend: "Agregar amigo por nombre de usuario:",
+      pendingRequests: "Solicitudes pendientes",
+      acceptedFriends: "Amigos aceptados"
+    },
+    fr: {
+      profile: "Profil",
+      friends: "Amis",
+      login: "Connexion",
+      language: "Langue",
+      addFriend: "Ajouter un ami par nom d'utilisateur :",
+      pendingRequests: "Demandes en attente",
+      acceptedFriends: "Amis acceptés"
+    },
+    de: {
+      profile: "Profil",
+      friends: "Freunde",
+      login: "Anmelden",
+      language: "Sprache",
+      addFriend: "Freund nach Benutzernamen hinzufügen:",
+      pendingRequests: "Ausstehende Anfragen",
+      acceptedFriends: "Akzeptierte Freunde"
+    },
+    ar: {
+      profile: "الملف الشخصي",
+      friends: "الأصدقاء",
+      login: "تسجيل الدخول",
+      language: "اللغة",
+      addFriend: "أضف صديقًا باستخدام اسم المستخدم:",
+      pendingRequests: "الطلبات المعلقة",
+      acceptedFriends: "الأصدقاء المقبولون"
+    }
+  };
+
+  function applyTranslations() {
+    const lang = localStorage.getItem("lang") || "en";
+    const t = translations[lang];
+
+    document.querySelectorAll("[data-t]").forEach(el => {
+      const key = el.getAttribute("data-t");
+      if (t[key]) el.textContent = t[key];
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", applyTranslations);
+</script>
+
 </body>
 </html>

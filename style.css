@@ -97,3 +97,44 @@ body.dark .emoji-btn {
   color: white;
   border-color: #444;
 }
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: #222;
+  padding: 10px;
+  z-index: 1000;
+}
+.menu-toggle {
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+}
+.menu-links {
+  display: none;
+  flex-direction: column;
+  background: #222;
+  padding-top: 10px;
+}
+.menu-links.show {
+  display: flex;
+}
+.menu-links a {
+  color: white;
+  text-decoration: none;
+  padding: 8px 10px;
+}
+.menu-links a:hover {
+  background: #444;
+}
+@media (min-width: 768px) {
+  .menu-links {
+    display: flex !important;
+    flex-direction: row;
+    gap: 10px;
+  }
+  .menu-toggle {
+    display: none;
+  }
+}
