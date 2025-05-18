@@ -1,24 +1,60 @@
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
+const sqlite3 = require("sqlite3").verbose();
+const path = require("path");
+const bodyParser = require("body-parser");
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
+// DB setup
+const db = new sqlite3.Database("./reports.db");
+
+// Middleware
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("."));
 
+// Admin login (basic)
+const ADMIN_USER = "admin";
+const ADMIN_PASS = "admin123";
+
+// Admin Panel
+app.get("/admin", (req, res) => {
+  res.sendFile(path.join(__dirname, "admin.html"));
+});
+
+app.post("/admin", (req, res) => {
+  const { username, password } = req.body;
+  if (username === ADMIN_USER && password === ADMIN_PASS) {
+    db.all("SELECT reported_id, COUNT(*) as count FROM reports GROUP BY reported_id ORDER BY count DESC", (err, reports) => {
+      db.all("SELECT blocker_id, blocked_id, timestamp FROM blocks ORDER BY timestamp DESC", (err2, blocks) => {
+        let html = "<h2>Reports</h2><ul>";
+        reports.forEach(r => {
+          html += `<li>User ${r.reported_id}: ${r.count} reports</li>`;
+        });
+        html += "</ul><h2>Blocks</h2><ul>";
+        blocks.forEach(b => {
+          html += `<li>${b.blocker_id} blocked ${b.blocked_id} at ${b.timestamp}</li>`;
+        });
+        html += "</ul>";
+        res.send(html);
+      });
+    });
+  } else {
+    res.send("Invalid credentials");
+  }
+});
+
+// WebSocket logic
 let queue = [];
-let reports = {};
-let blocks = {};
 
 io.on("connection", (socket) => {
   socket.on("joinQueue", (prefs) => {
     socket.prefs = prefs;
 
-    // Try to find a match
     let matchIndex = queue.findIndex(other =>
-      !isBlocked(socket, other) &&
       (prefs.gender === "any" || prefs.gender === other.prefs.gender || other.prefs.gender === "any") &&
       (prefs.interest === "" || prefs.interest.toLowerCase() === other.prefs.interest.toLowerCase())
     );
@@ -50,35 +86,25 @@ io.on("connection", (socket) => {
     if (socket.partner) socket.partner.emit("ice-candidate", candidate);
   });
 
-  socket.on("disconnect", () => {
-    queue = queue.filter(s => s !== socket);
-    if (socket.partner) {
-      socket.partner.partner = null;
-    }
-  });
-
   socket.on("report", () => {
     if (socket.partner) {
-      const id = socket.partner.id;
-      reports[id] = (reports[id] || 0) + 1;
+      db.run("INSERT INTO reports (reporter_id, reported_id) VALUES (?, ?)", [socket.id, socket.partner.id]);
       socket.partner.disconnect();
     }
   });
 
   socket.on("block", () => {
     if (socket.partner) {
-      const blocker = socket.id;
-      const blocked = socket.partner.id;
-      if (!blocks[blocker]) blocks[blocker] = new Set();
-      blocks[blocker].add(blocked);
+      db.run("INSERT INTO blocks (blocker_id, blocked_id) VALUES (?, ?)", [socket.id, socket.partner.id]);
       socket.partner.disconnect();
     }
   });
-});
 
-function isBlocked(a, b) {
-  return (blocks[a.id] && blocks[a.id].has(b.id)) || (blocks[b.id] && blocks[b.id].has(a.id));
-}
+  socket.on("disconnect", () => {
+    queue = queue.filter(s => s !== socket);
+    if (socket.partner) socket.partner.partner = null;
+  });
+});
 
 server.listen(3000, () => {
   console.log("Server running on http://localhost:3000");
