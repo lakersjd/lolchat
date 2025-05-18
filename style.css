@@ -138,3 +138,15 @@ body.dark .emoji-btn {
     display: none;
   }
 }
+
+.blur {
+  filter: blur(4px);
+  transition: all 0.5s ease;
+}
+.fadein {
+  animation: fadein 0.5s;
+}
+@keyframes fadein {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

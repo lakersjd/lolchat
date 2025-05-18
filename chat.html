@@ -3,128 +3,68 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Chat</title>
-  <link rel="stylesheet" href="style.css"/>
+  <title>ZeroX Chat</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
-<div id="sidebarNav" class="sidebar">
-  <div class="menu-toggle" onclick="toggleSidebar()">☰</div>
-  <div class="menu-links" id="menuLinks">
-    <a href="/profile">👤 Profile</a>
-    <a href="/friends">🤝 Friends</a>
-    <a href="/login">🔐 Login</a>
-  
-<div style="margin-top:10px;">
-  <label style="color:white;">🌐 Language:</label>
-  <select id="languageSelect" onchange="setLanguage(this.value)">
-    <option value="en">English</option>
-    <option value="es">Español</option>
-    <option value="fr">Français</option>
-    <option value="de">Deutsch</option>
-    <option value="ar">العربية</option>
-  </select>
-</div>
-<script>
-  function setLanguage(lang) {
-    localStorage.setItem('lang', lang);
-    alert("Language set to " + lang + ". (Translation system coming soon!)");
-  }
-  document.addEventListener("DOMContentLoaded", () => {
-    const lang = localStorage.getItem("lang");
-    if (lang) {
-      document.getElementById("languageSelect").value = lang;
-    }
-  });
-</script>
-</div>
-</div>
-<script>
-  function toggleSidebar() {
-    document.getElementById("menuLinks").classList.toggle("show");
-  }
-</script>
-
-
-<div id="topNav" style="position:fixed;top:0;right:0;background:#333;padding:10px 15px;z-index:999;">
-  <a href="/profile" style="color:white;margin-right:10px;">👤 Profile</a>
-  <a href="/friends" style="color:white;margin-right:10px;">🤝 Friends</a>
-  <a href="/login" style="color:white;">🔐 Login</a>
-</div>
-
-  <div id="topStatus">
-    <span id="onlineCount">🟢 Online: 0</span>
-    <span id="chatCounter" style="margin-left: 20px;">💬 Chats: 0</span>
-    <span id="typingIndicator" style="margin-left: 20px;"></span>
+  <div id="sidebarNav" class="sidebar">
+    <div class="menu-toggle" onclick="toggleSidebar()">☰</div>
+    <div class="menu-links" id="menuLinks">
+      <a href="/profile">👤 Profile</a>
+      <a href="/friends">🤝 Friends</a>
+      <a href="/login">🔐 Login</a>
+      <div style="margin-top:10px;">
+        <label style="color:white;">🌐 Language:</label>
+        <select id="languageSelect" onchange="setLanguage(this.value)">
+          <option value="en">English</option>
+          <option value="es">Español</option>
+          <option value="fr">Français</option>
+          <option value="de">Deutsch</option>
+          <option value="ar">العربية</option>
+        </select>
+      </div>
+    </div>
   </div>
 
   <div class="chat-container" id="chat">
-    <div id="textChat" style="display: none;"><img id="strangerAvatar" style="width:40px;height:40px;border-radius:50%;"><br>
-      <div id="messages"></div><input type="file" id="fileInput" style="display:none;" />
+    <div id="textChat" style="display: none;">
+      <div id="messages"></div>
       <input type="text" id="input" placeholder="Type a message..." />
       <button onclick="sendMessage()">Send</button>
+      <input type="file" id="fileInput" />
+      <div id="emojiTray">
+        <button class="emoji-btn" onclick="insertEmoji('😄')">😄</button>
+        <button class="emoji-btn" onclick="insertEmoji('❤️')">❤️</button>
+        <button class="emoji-btn" onclick="insertEmoji('🔥')">🔥</button>
+        <button class="emoji-btn" onclick="insertEmoji('😂')">😂</button>
+        <button class="emoji-btn" onclick="insertEmoji('👍')">👍</button>
+      </div>
     </div>
+
     <div id="videoChat" style="display: none;">
       <div id="videoAvatars" style="margin-bottom: 10px;">
-      <img id="myVideoAvatar" style="width:40px;height:40px;border-radius:50%;margin-right:10px;">
-      <img id="strangerVideoAvatar" style="width:40px;height:40px;border-radius:50%;">
-    </div>
-    <div class="video-frame">
-    <div class="video-controls">
-      <button id="muteMicBtn">🎙️ Mute</button>
-      <button id="toggleCamBtn">📷 Off</button>
-    </div>
+        <img id="myVideoAvatar" style="width:40px;height:40px;border-radius:50%;margin-right:10px;">
+        <img id="strangerVideoAvatar" style="width:40px;height:40px;border-radius:50%;">
+      </div>
+      <div class="video-frame">
         <video id="localVideo" autoplay muted playsinline></video>
         <video id="remoteVideo" autoplay playsinline></video>
       </div>
+      <div class="video-controls">
+        <button id="muteMicBtn">🎙️ Mute</button>
+        <button id="toggleCamBtn">📷 Off</button>
+      </div>
     </div>
+
     <div id="controls">
-      
       <button id="skipBtn">Skip</button>
+      <button id="stopBtn" onclick="location.reload()">Stop</button>
       <button id="reportBtn">⚠ Report</button>
       <button id="blockBtn">🚫 Block</button>
     </div>
   </div>
+
   <script src="/socket.io/socket.io.js"></script>
   <script src="script.js"></script>
-
-<script>
-  async function simulateTranslation(text, lang) {
-    const fakeTranslations = {
-      es: " (traducido)",
-      fr: " (traduit)",
-      de: " (übersetzt)",
-      ar: " (مترجم)"
-    };
-    return text + (fakeTranslations[lang] || "");
-  }
-
-  async function displayTranslatedMessage(msg, from = "Stranger") {
-    const lang = localStorage.getItem("lang") || "en";
-    const translated = await simulateTranslation(msg, lang);
-    const div = document.createElement("div");
-    div.innerHTML = `<b>${from}:</b> ${translated}`;
-    document.getElementById("messages")?.appendChild(div);
-  }
-
-  // override socket.on message
-  if (typeof socket !== "undefined") {
-    socket.off("message");
-    socket.on("message", async (msg) => {
-      await displayTranslatedMessage(msg);
-    });
-
-    // override sendMessage to still send normal message
-    window.sendMessage = function () {
-      const input = document.getElementById("input");
-      const msg = input.value;
-      if (!msg.trim()) return;
-      socket.emit("message", msg);
-      displayTranslatedMessage(msg, "You");
-      input.value = "";
-    };
-  }
-</script>
-
 </body>
 </html>

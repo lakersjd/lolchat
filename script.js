@@ -32,7 +32,16 @@ document.getElementById("cancelSearch").addEventListener("click", () => {
   window.location.href = "/";
 });
 
+
+const connectSound = new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg");
+
 socket.on("ready", () => {
+  connectSound.play();
+  document.getElementById("matchStatus")?.remove();
+  document.body.classList.remove("blur");
+  // rest continues...
+});
+
   document.getElementById("matchStatus").remove();
   matchSound.play();
   if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
@@ -167,7 +176,16 @@ socket.on("strangerStopTyping", () => {
 
 
 let chatCount = localStorage.getItem("chatCount") || 0;
+
+const connectSound = new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg");
+
 socket.on("ready", () => {
+  connectSound.play();
+  document.getElementById("matchStatus")?.remove();
+  document.body.classList.remove("blur");
+  // rest continues...
+});
+
   chatCount++;
   localStorage.setItem("chatCount", chatCount);
   document.getElementById("chatCounter")?.textContent = `💬 Chats: ${chatCount}`;
