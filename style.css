@@ -1,0 +1,25 @@
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  background: #111;
+  color: #fff;
+}
+#videoChatContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+video {
+  width: 300px;
+  height: 225px;
+  margin: 0 10px;
+  background: #000;
+}
+#chatControls {
+  margin-top: 20px;
+}
+button {
+  padding: 10px 20px;
+  margin: 5px;
+  cursor: pointer;
+}
