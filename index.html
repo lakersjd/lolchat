@@ -4,28 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ZeroX - Home</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
-  <div id="sidebarNav" class="sidebar">
-    <div class="menu-toggle" onclick="toggleSidebar()">☰</div>
-    <div class="menu-links" id="menuLinks">
-      <a href="/profile">👤 <span data-t="profile">Profile</span></a>
-      <a href="/friends">🤝 <span data-t="friends">Friends</span></a>
-      <a href="/login">🔐 <span data-t="login">Login</span></a>
-      <div style="margin-top:10px;">
-        <label style="color:white;"><span data-t="language">🌐 Language:</span></label>
-        <select id="languageSelect" onchange="setLanguage(this.value)">
-          <option value="en">English</option>
-          <option value="es">Español</option>
-          <option value="fr">Français</option>
-          <option value="de">Deutsch</option>
-          <option value="ar">العربية</option>
-        </select>
-      </div>
-    </div>
-  </div>
-
   <div class="container">
     <h1>ZeroX</h1>
     <p>Chat anonymously with strangers around the world.</p>
@@ -41,38 +22,63 @@
       <label>Interest:</label>
       <input type="text" id="interest" placeholder="e.g., gaming, music"><br><br>
 
-      <label><input type="checkbox" id="friendOnly"> Friend-Only Chat</label><br><br>
+      <label>Language:</label>
+      <select id="language">
+        <option value="any">Any</option>
+        <option value="en">English</option>
+        <option value="es">Spanish</option>
+        <option value="fr">French</option>
+        <option value="de">German</option>
+        <option value="zh">Chinese</option>
+      </select><br><br>
 
       <div class="button-group">
         <button type="submit" data-mode="text">Start Text Chat</button>
         <button type="submit" data-mode="video">Start Video Chat</button>
       </div>
     </form>
+
+    <div class="theme-toggle">
+      <label>
+        <input type="checkbox" id="themeSwitcher" />
+        <span>🌞/🌙</span>
+      </label>
+    </div>
   </div>
 
   <script>
-    function toggleSidebar() {
-      document.getElementById("menuLinks").classList.toggle("show");
-    }
-    const lang = localStorage.getItem("lang");
-    if (lang) document.getElementById("languageSelect").value = lang;
+    const switcher = document.getElementById("themeSwitcher");
+    const body = document.body;
+    const theme = localStorage.getItem("theme");
 
-    function setLanguage(lang) {
-      localStorage.setItem("lang", lang);
-      location.reload();
+    if (theme === "light") {
+      body.classList.remove("dark");
+    } else {
+      body.classList.add("dark");
+      switcher.checked = true;
     }
+
+    switcher.addEventListener("change", () => {
+      if (switcher.checked) {
+        body.classList.add("dark");
+        localStorage.setItem("theme", "dark");
+      } else {
+        body.classList.remove("dark");
+        localStorage.setItem("theme", "light");
+      }
+    });
 
     const form = document.getElementById("preferenceForm");
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       const gender = document.getElementById("gender").value;
       const interest = document.getElementById("interest").value;
-      const friendOnly = document.getElementById("friendOnly").checked;
+      const language = document.getElementById("language").value;
       const mode = e.submitter.getAttribute("data-mode");
       localStorage.setItem("gender", gender);
       localStorage.setItem("interest", interest);
-      localStorage.setItem("friendOnly", friendOnly);
-      window.location.href = `chat.html?mode=${mode}&friendOnly=${friendOnly}`;
+      localStorage.setItem("language", language);
+      window.location.href = `chat.html?mode=${mode}`;
     });
   </script>
 </body>

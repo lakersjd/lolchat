@@ -15,18 +15,35 @@ socket.on("message", (msg) => {
   const div = document.createElement("div");
   div.textContent = "Stranger: " + msg;
   document.getElementById("messages").appendChild(div);
+  document.getElementById("typingIndicator").style.display = "none";
 });
 
 function sendMessage() {
   const input = document.getElementById("input");
   const msg = input.value;
+  if (msg.trim() === "") return;
   socket.emit("message", msg);
   const div = document.createElement("div");
   div.textContent = "You: " + msg;
   document.getElementById("messages").appendChild(div);
   input.value = "";
+  document.getElementById("typingIndicator").style.display = "none";
 }
 window.sendMessage = sendMessage;
+
+document.getElementById("input")?.addEventListener("input", () => {
+  socket.emit("typing");
+});
+
+socket.on("typing", () => {
+  const el = document.getElementById("typingIndicator");
+  el.style.display = "block";
+  el.textContent = "Stranger is typing...";
+  clearTimeout(el._timeout);
+  el._timeout = setTimeout(() => {
+    el.style.display = "none";
+  }, 2000);
+});
 
 if (mode === "text") {
   document.getElementById("textChat").style.display = "block";
@@ -90,25 +107,10 @@ if (mode === "video") {
   startCountdown();
 }
 
-// Mic Toggle
-document.getElementById("micToggleBtn")?.addEventListener("click", () => {
-  micEnabled = !micEnabled;
-  localStream.getAudioTracks().forEach(track => {
-    track.enabled = micEnabled;
-  });
-  document.getElementById("micToggleBtn").innerText = micEnabled ? "🎤 Mic On" : "🔇 Mic Off";
-});
-
-// Screen Share
-document.getElementById("screenShareBtn")?.addEventListener("click", async () => {
-  try {
-    const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-    const videoTrack = screenStream.getVideoTracks()[0];
-    const sender = peerConnection.getSenders().find(s => s.track.kind === "video");
-    sender.replaceTrack(videoTrack);
-  } catch (err) {
-    alert("Screen share failed: " + err.message);
-  }
+document.getElementById("emojiBtn")?.addEventListener("click", () => {
+  const input = document.getElementById("input");
+  input.value += "😊";
+  input.focus();
 });
 
 function startCountdown() {
@@ -149,4 +151,31 @@ socket.on("onlineCount", (count) => {
 function playSound(type) {
   const audio = new Audio(type === "connect" ? "connect.mp3" : "disconnect.mp3");
   audio.play();
+}
+
+// Theme and Font Size Settings
+const themeSelect = document.getElementById("themeSelect");
+const fontSizeSelect = document.getElementById("fontSizeSelect");
+
+themeSelect.addEventListener("change", () => {
+  const theme = themeSelect.value;
+  document.body.classList.toggle("dark", theme === "dark");
+  localStorage.setItem("theme", theme);
+});
+
+fontSizeSelect.addEventListener("change", () => {
+  document.body.style.fontSize = fontSizeSelect.value;
+  localStorage.setItem("fontSize", fontSizeSelect.value);
+});
+
+// Load preferences
+const savedTheme = localStorage.getItem("theme");
+const savedFontSize = localStorage.getItem("fontSize");
+if (savedTheme) {
+  document.body.classList.toggle("dark", savedTheme === "dark");
+  themeSelect.value = savedTheme;
+}
+if (savedFontSize) {
+  document.body.style.fontSize = savedFontSize;
+  fontSizeSelect.value = savedFontSize;
 }

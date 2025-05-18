@@ -52,18 +52,22 @@ let queue = [];
 io.on("connection", (socket) => {
   io.emit("onlineCount", io.engine.clientsCount);
   socket.on("joinQueue", (prefs) => {
+    prefs.language = prefs.language || "any";
+
     socket.prefs = prefs;
 
     // Looser matching logic
     const interest = prefs.interest?.toLowerCase().trim();
 
     let matchIndex = queue.findIndex(other => {
+      const langMatch = prefs.language === "any" || other.prefs.language === "any" || prefs.language === other.prefs.language;
+
       const otherInterest = other.prefs.interest?.toLowerCase().trim();
       const genderMatch = prefs.gender === "any" || other.prefs.gender === "any" || prefs.gender === other.prefs.gender;
       const interestMatch =
         !interest || !otherInterest || interest === otherInterest ||
         interest.includes(otherInterest) || otherInterest.includes(interest);
-      return genderMatch && interestMatch;
+      return genderMatch && interestMatch && langMatch;
     });
 
     if (matchIndex !== -1) {
@@ -104,6 +108,12 @@ io.on("connection", (socket) => {
     if (socket.partner) {
       db.run("INSERT INTO blocks (blocker_id, blocked_id) VALUES (?, ?)", [socket.id, socket.partner.id]);
       socket.partner.disconnect();
+    }
+  });
+
+  socket.on("typing", () => {
+    if (socket.partner) {
+      socket.partner.emit("typing");
     }
   });
 

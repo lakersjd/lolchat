@@ -11,9 +11,11 @@
     <h1>ZeroX Chat</h1>
     <div id="systemMsg">🔎 Searching for a stranger...</div>
 
-    <div id="textChat" style="display: none;">
+    <div id="typingIndicator" style="display:none; font-style: italic; color: gray;"></div>
+    <div id="textChat" style="display: none;"> style="display:none; font-style: italic; color: gray;"></div>
       <div id="messages"></div>
       <input type="text" id="input" placeholder="Type your message..." />
+      <button id="emojiBtn">😊</button>
       <button onclick="sendMessage()">Send</button>
     </div>
 
@@ -24,7 +26,7 @@
       </div>
     </div>
 
-    <div id="controls">
+    <div id="controls" style="display: none;" class="controls">
   <button id="micToggleBtn">🎤 Mic On</button>
   <button id="screenShareBtn">🖥 Share Screen</button>
       <div id="countdown">⏳ 3:00</div>
@@ -32,6 +34,23 @@
       <button id="reportBtn">⚠ Report</button>
       <button id="blockBtn">🚫 Block</button>
     </div>
+
+    
+<div class="chat-controls">
+  <label>Theme:
+    <select id="themeSelect">
+      <option value="light">Light</option>
+      <option value="dark">Dark</option>
+    </select>
+  </label>
+  <label>Font Size:
+    <select id="fontSizeSelect">
+      <option value="14px">Small</option>
+      <option value="16px" selected>Medium</option>
+      <option value="20px">Large</option>
+    </select>
+  </label>
+</div>
 
     <div class="theme-toggle">
       <label>
