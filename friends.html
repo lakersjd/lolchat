@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>Friends</title></head>
+<body>
+  <h2>Friends & Requests</h2>
+  <form method="POST" action="/friends/add">
+    <label>Add Friend by Username:</label><br>
+    <input type="text" name="friend_username" required>
+    <button type="submit">Send Request</button>
+  </form>
+
+  <h3>Pending Requests</h3>
+  <div id="pending">{{pending}}</div>
+
+  <h3>Accepted Friends</h3>
+  <div id="accepted">{{accepted}}</div>
+</body>
+</html>

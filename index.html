@@ -19,7 +19,8 @@
         <option value="female">Female</option>
       </select><br><br>
 
-      <label>Interest:</label>
+      <label><input type="checkbox" id="friendOnly"> Friend-Only Chat</label><br><br>
+<label>Interest:</label>
       <input type="text" id="interest" placeholder="e.g., gaming, music"><br><br>
 
       <div class="button-group">
@@ -64,9 +65,10 @@
       const gender = document.getElementById("gender").value;
       const interest = document.getElementById("interest").value;
       const mode = e.submitter.getAttribute("data-mode");
+      const friendOnly = document.getElementById("friendOnly").checked;
       localStorage.setItem("gender", gender);
       localStorage.setItem("interest", interest);
-      window.location.href = `chat.html?mode=${mode}`;
+      window.location.href = `chat.html?mode=${mode}&friendOnly=${friendOnly}`;
     });
   </script>
 </body>
