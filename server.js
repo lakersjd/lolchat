@@ -16,11 +16,10 @@ const db = new sqlite3.Database("./reports.db");
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("."));
 
-// Admin login (basic)
+// Admin Panel
 const ADMIN_USER = "admin";
 const ADMIN_PASS = "admin123";
 
-// Admin Panel
 app.get("/admin", (req, res) => {
   res.sendFile(path.join(__dirname, "admin.html"));
 });
@@ -51,13 +50,21 @@ app.post("/admin", (req, res) => {
 let queue = [];
 
 io.on("connection", (socket) => {
+  io.emit("onlineCount", io.engine.clientsCount);
   socket.on("joinQueue", (prefs) => {
     socket.prefs = prefs;
 
-    let matchIndex = queue.findIndex(other =>
-      (prefs.gender === "any" || prefs.gender === other.prefs.gender || other.prefs.gender === "any") &&
-      (prefs.interest === "" || prefs.interest.toLowerCase() === other.prefs.interest.toLowerCase())
-    );
+    // Looser matching logic
+    const interest = prefs.interest?.toLowerCase().trim();
+
+    let matchIndex = queue.findIndex(other => {
+      const otherInterest = other.prefs.interest?.toLowerCase().trim();
+      const genderMatch = prefs.gender === "any" || other.prefs.gender === "any" || prefs.gender === other.prefs.gender;
+      const interestMatch =
+        !interest || !otherInterest || interest === otherInterest ||
+        interest.includes(otherInterest) || otherInterest.includes(interest);
+      return genderMatch && interestMatch;
+    });
 
     if (matchIndex !== -1) {
       let partner = queue.splice(matchIndex, 1)[0];
@@ -101,6 +108,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
+    io.emit("onlineCount", io.engine.clientsCount);
     queue = queue.filter(s => s !== socket);
     if (socket.partner) socket.partner.partner = null;
   });
