@@ -1,66 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
   <title>ZeroX Chat</title>
-  <link rel="stylesheet" href="style.css"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="chat-container">
     <h1>ZeroX Chat</h1>
-    <div id="systemMsg">🔍 Searching for a partner...</div>
-    <button id="cancelSearchBtn" style="display:none; margin-top:10px;">🔁 Try Again</button>🔎 Searching for a stranger...</div>
+    <div id="systemMsg" class="status-msg">🔍 Searching for a partner...</div>
 
-    <div id="typingIndicator" style="display:none;" class="chat-content" style="display:none; font-style: italic; color: gray;"></div>
-    <div id="textChat" style="display: none;" class="chat-content"> style="display:none; font-style: italic; color: gray;"></div>
-      <div id="messages"></div>
-      <input type="text" id="input" placeholder="Type your message..." />
-      <button id="emojiBtn">😊</button>
-      <button onclick="sendMessage()">Send</button>
+    <div id="textChat" style="display: none;">
+      <div class="chat-box">
+        <div id="messages" class="message-box"></div>
+        <div id="typingIndicator" class="typing-indicator"></div>
+        <div class="input-row">
+          <input type="text" id="input" placeholder="Type your message..." autocomplete="off" />
+          <button onclick="sendMessage()">Send</button>
+        </div>
+      </div>
     </div>
 
-    <div id="videoChat" style="display: none;" class="chat-content">
+    <div id="videoChat" style="display: none;">
       <div class="video-frame">
         <video id="localVideo" autoplay muted playsinline></video>
         <video id="remoteVideo" autoplay playsinline></video>
       </div>
     </div>
 
-    <div class="menu-bar" style="margin-bottom:10px;">
-      <button id="homeBtn">🏠 Home</button>
-    </div>
-    <div id="controls" style="display: none;" class="controls">
-  <button id="micToggleBtn">🎤 Mic On</button>
-  <button id="screenShareBtn">🖥 Share Screen</button>
+    <div id="controls" style="display: none;">
       <div id="countdown">⏳ 3:00</div>
       <button id="skipBtn">Skip</button>
       <button id="reportBtn">⚠ Report</button>
       <button id="blockBtn">🚫 Block</button>
-    </div>
-
-    
-<div class="chat-controls">
-  <label>Theme:
-    <select id="themeSelect">
-      <option value="light">Light</option>
-      <option value="dark">Dark</option>
-    </select>
-  </label>
-  <label>Font Size:
-    <select id="fontSizeSelect">
-      <option value="14px">Small</option>
-      <option value="16px" selected>Medium</option>
-      <option value="20px">Large</option>
-    </select>
-  </label>
-</div>
-
-    <div class="theme-toggle">
-      <label>
-        <input type="checkbox" id="themeSwitcher" />
-        <span>🌞/🌙</span>
-      </label>
+      <button id="homeBtn">🏠 Home</button>
     </div>
   </div>
 
