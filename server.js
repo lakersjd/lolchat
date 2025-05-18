@@ -13,35 +13,22 @@ const io = new Server(server);
 const db = new sqlite3.Database("./reports.db");
 db.run(`CREATE TABLE IF NOT EXISTS reports (id INTEGER PRIMARY KEY, reporter_id TEXT, reported_id TEXT, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)`);
 db.run(`CREATE TABLE IF NOT EXISTS blocks (id INTEGER PRIMARY KEY, blocker_id TEXT, blocked_id TEXT, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)`);
+db.run(`CREATE TABLE IF NOT EXISTS user_logs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  socket_id TEXT,
+  country TEXT,
+  language TEXT,
+  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+);`);
 
-// Middleware
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("."));
 
-// Admin panel
 const ADMIN_USER = "admin";
 const ADMIN_PASS = "admin123";
 app.get("/admin", (req, res) => res.sendFile(path.join(__dirname, "admin.html")));
 app.post("/admin", (req, res) => {
-  const { username, password } = req.body;
-  if (username === ADMIN_USER && password === ADMIN_PASS) {
-    db.all("SELECT reported_id, COUNT(*) as count FROM reports GROUP BY reported_id", (err, reports) => {
-      db.all("SELECT blocker_id, blocked_id, timestamp FROM blocks ORDER BY timestamp DESC", (err2, blocks) => {
-        db.all("SELECT country, language, COUNT(*) as count FROM user_logs GROUP BY country, language ORDER BY count DESC", (err3, logs) => {
-          let html = "<h2>Reports</h2><ul>";
-          reports.forEach(r => html += `<li>${r.reported_id}: ${r.count} reports</li>`);
-          html += "</ul><h2>Blocks</h2><ul>";
-          blocks.forEach(b => html += `<li>${b.blocker_id} → ${b.blocked_id} @ ${b.timestamp}</li>`);
-          html += "</ul><h2>User Region Logs</h2><ul>";
-          logs.forEach(l => html += `<li>${l.country.toUpperCase()} - ${l.language.toUpperCase()}: ${l.count}</li>`);
-          html += "</ul>";
-          res.send(html);
-        });
-      });
-    });
-  } else {
-    res.send("Invalid credentials");
-  }
+  res.send("Admin access not implemented in this fallback version.");
 });
 
 let queue = [];
