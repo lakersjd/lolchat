@@ -8,87 +8,79 @@
   <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
-  <div style="position: absolute; top: 12px; right: 12px;" id="themeContainer">
-    <label style="font-size: 0.9em;">
-      <input type="checkbox" id="themeSwitcher" />
-      🌙 Dark Mode
-    </label>
-  </div>
-  <div class="container">
-    <h1>ZeroX</h1>
-    <p>Click below to start chatting with a random stranger.</p>
+  <div class="main-container">
+    <div class="left-panel">
+      <div class="logo">🎥 ZeroX TV</div>
+      <div class="online-counter">🟢 <span id="onlineCount">0</span> users online</div>
 
-    <button id="connectBtn">Connect to Stranger</button>
-    
-    <div id="geoMsg" style="margin-top: 20px; font-style: italic;"></div>
+      <div class="mode-toggle">
+        <label><input type="radio" name="mode" value="video" checked /> Video Chat</label>
+        <label><input type="radio" name="mode" value="text" /> Text Only</label>
+      </div>
 
-    
+      <select id="country">
+        <option value="any">Any Country</option>
+        <option value="us">🇺🇸 United States</option>
+        <option value="uk">🇬🇧 United Kingdom</option>
+        <option value="ca">🇨🇦 Canada</option>
+        <option value="in">🇮🇳 India</option>
+        <option value="ph">🇵🇭 Philippines</option>
+        <option value="ng">🇳🇬 Nigeria</option>
+        <option value="other">🌍 Other</option>
+      </select>
+
+      <select id="language">
+        <option value="any">Any Language</option>
+        <option value="en">English</option>
+        <option value="es">Spanish</option>
+        <option value="fr">French</option>
+        <option value="de">German</option>
+      </select>
+
+      <select id="gender">
+        <option value="any">Any Gender</option>
+        <option value="male">👦 Male</option>
+        <option value="female">👧 Female</option>
+      </select>
+
+      <input type="text" id="tags" placeholder="Enter tags (e.g. gaming, music)" />
+
+      <div class="start-stop-buttons">
+        <button id="startBtn">Start</button>
+        <button id="stopBtn">Stop</button>
+      </div>
+    </div>
+
+    <div class="right-panel">
+      <div id="splashNotice" class="notice">By pressing “Start”, you agree to our <a href="#">rules</a>. Rule violators will be banned. Please keep your face visible in the camera frame.</div>
+      <div id="previewArea" class="preview-area">🔒 Access not granted yet</div>
+      <input id="hiddenMode" type="hidden" value="video" />
+    </div>
   </div>
 
   <script>
-        // Auto-detect
-    fetch('https://get.geojs.io/v1/ip/geo.json')
-      .then(res => res.json())
-      .then(data => {
-        const countryCode = data.country_code?.toLowerCase();
-        const countryName = data.country;
-        document.getElementById("geoMsg").innerText = `🌐 You appear to be in ${countryName} (${countryCode.toUpperCase()})`;
-        localStorage.setItem("country", countryCode || "any");
-      })
-      .catch(() => {
-        localStorage.setItem("country", "any");
-      });
+    document.getElementById("startBtn").addEventListener("click", () => {
+      const gender = document.getElementById("gender").value;
+      const country = document.getElementById("country").value;
+      const language = document.getElementById("language").value;
+      const tags = document.getElementById("tags").value;
+      const mode = document.querySelector('input[name="mode"]:checked').value;
 
-    const lang = navigator.language || navigator.userLanguage;
-    localStorage.setItem("language", lang.slice(0, 2).toLowerCase());
-
-    document.getElementById("connectBtn").addEventListener("click", () => {
-      
-    document.body.innerHTML = '<div style="height:100vh;display:flex;align-items:center;justify-content:center;font-size:1.5em;">🔄 Connecting you to a stranger...</div>';
-    setTimeout(() => {
-      window.location.href = "chat.html?mode=video";
-    }, 1000);
-    
-    });
-  
-    const switcher = document.getElementById("themeSwitcher");
-    const body = document.body;
-    const theme = localStorage.getItem("theme");
-
-    if (theme === "dark") {
-      body.classList.add("dark");
-      switcher.checked = true;
-    }
-
-    switcher?.addEventListener("change", () => {
-      if (switcher.checked) {
-        body.classList.add("dark");
-        localStorage.setItem("theme", "dark");
-      } else {
-        body.classList.remove("dark");
-        localStorage.setItem("theme", "light");
-      }
+      localStorage.setItem("gender", gender);
+      localStorage.setItem("country", country);
+      localStorage.setItem("language", language);
+      localStorage.setItem("tags", tags);
+      window.location.href = `chat.html?mode=${mode}`;
     });
 
-    const switcher = document.getElementById("themeSwitcher");
-    const body = document.body;
-    const storedTheme = localStorage.getItem("theme");
-    const systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    document.querySelectorAll("input[name='mode']").forEach(el =>
+      el.addEventListener("change", () =>
+        document.getElementById("hiddenMode").value = el.value
+      )
+    );
 
-    if (storedTheme === "dark" || (!storedTheme && systemPrefersDark)) {
-      body.classList.add("dark");
-      switcher.checked = true;
-    }
-
-    switcher?.addEventListener("change", () => {
-      if (switcher.checked) {
-        body.classList.add("dark");
-        localStorage.setItem("theme", "dark");
-      } else {
-        body.classList.remove("dark");
-        localStorage.setItem("theme", "light");
-      }
-    });
-</script>
+    // Simulate online count
+    document.getElementById("onlineCount").textContent = Math.floor(Math.random() * 500000) + 3000;
+  </script>
 </body>
 </html>
