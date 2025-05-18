@@ -46,32 +46,26 @@ app.post("/admin", (req, res) => {
   }
 });
 
-// WebSocket logic
+// Matchmaking
 let queue = [];
 
 io.on("connection", (socket) => {
   io.emit("onlineCount", io.engine.clientsCount);
+
   socket.on("joinQueue", (prefs) => {
     prefs.language = prefs.language || "any";
-
     socket.prefs = prefs;
 
-    // Looser matching logic
-    const interest = prefs.interest?.toLowerCase().trim();
-
-    let matchIndex = queue.findIndex(other => {
-      const langMatch = prefs.language === "any" || other.prefs.language === "any" || prefs.language === other.prefs.language;
-
-      const otherInterest = other.prefs.interest?.toLowerCase().trim();
+    const matchIndex = queue.findIndex(other => {
+      const sameLang = prefs.language === "any" || other.prefs.language === "any" || prefs.language === other.prefs.language;
+      const sameInterest = !prefs.interest || !other.prefs.interest ||
+        prefs.interest.toLowerCase() === other.prefs.interest.toLowerCase();
       const genderMatch = prefs.gender === "any" || other.prefs.gender === "any" || prefs.gender === other.prefs.gender;
-      const interestMatch =
-        !interest || !otherInterest || interest === otherInterest ||
-        interest.includes(otherInterest) || otherInterest.includes(interest);
-      return genderMatch && interestMatch && langMatch;
+      return sameLang && sameInterest && genderMatch;
     });
 
     if (matchIndex !== -1) {
-      let partner = queue.splice(matchIndex, 1)[0];
+      const partner = queue.splice(matchIndex, 1)[0];
       socket.partner = partner;
       partner.partner = socket;
       socket.emit("ready");
@@ -112,18 +106,16 @@ io.on("connection", (socket) => {
   });
 
   socket.on("typing", () => {
-    if (socket.partner) {
-      socket.partner.emit("typing");
-    }
+    if (socket.partner) socket.partner.emit("typing");
   });
 
   socket.on("disconnect", () => {
-    io.emit("onlineCount", io.engine.clientsCount);
     queue = queue.filter(s => s !== socket);
     if (socket.partner) socket.partner.partner = null;
+    io.emit("onlineCount", io.engine.clientsCount);
   });
 });
 
 server.listen(3000, () => {
-  console.log("Server running on http://localhost:3000");
+  console.log("✅ Server running at http://localhost:3000");
 });
