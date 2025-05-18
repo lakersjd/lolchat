@@ -25,6 +25,19 @@ io.on("connection", (socket) => {
     }
   });
 
+  
+  socket.on("offer", (offer) => {
+    if (socket.partner) socket.partner.emit("offer", offer);
+  });
+  socket.on("answer", (answer) => {
+    if (socket.partner) socket.partner.emit("answer", answer);
+  });
+  socket.on("ice-candidate", (candidate) => {
+    if (socket.partner) socket.partner.emit("ice-candidate", candidate);
+  });
+  socket.on("ready", () => {
+    if (socket.partner) socket.partner.emit("ready");
+  });
   socket.on("disconnect", () => {
     if (socket.partner) {
       socket.partner.partner = null;
