@@ -1,122 +1,83 @@
-const express = require("express");
-const http = require("http");
-const { Server } = require("socket.io");
-const sqlite3 = require("sqlite3").verbose();
-const path = require("path");
-const bodyParser = require("body-parser");
+
+const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
+const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-// SQLite setup
-const db = new sqlite3.Database("./reports.db");
-db.run(`CREATE TABLE IF NOT EXISTS reports (id INTEGER PRIMARY KEY, reporter_id TEXT, reported_id TEXT, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)`);
-db.run(`CREATE TABLE IF NOT EXISTS blocks (id INTEGER PRIMARY KEY, blocker_id TEXT, blocked_id TEXT, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)`);
-db.run(`CREATE TABLE IF NOT EXISTS user_logs (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  socket_id TEXT,
-  country TEXT,
-  language TEXT,
-  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-);`);
+const PORT = process.env.PORT || 3000;
 
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static("."));
+let waitingUsers = [];
+const blockedPairs = new Set();
+let onlineUsers = 0;
 
-const ADMIN_USER = "admin";
-const ADMIN_PASS = "admin123";
-app.get("/admin", (req, res) => res.sendFile(path.join(__dirname, "admin.html")));
-app.post("/admin", (req, res) => {
-  res.send("Admin access not implemented in this fallback version.");
-});
+app.use(express.static(path.join(__dirname)));
 
-let queue = [];
+function getOtherUserInRoom(roomId, currentId) {
+  const [id1, id2] = roomId.split('#');
+  return currentId === id1 ? id2 : id1;
+}
 
-io.on("connection", (socket) => {
-  io.emit("onlineCount", io.engine.clientsCount);
+io.on('connection', (socket) => {
+  onlineUsers++;
+  io.emit('userCount', onlineUsers);
 
-  socket.on("joinQueue", (prefs) => {
-    const { gender, country, language, tags } = prefs;
-    const tagList = tags?.toLowerCase().split(/[, ]+/).filter(Boolean) || [];
+  socket.on('joinQueue', ({ username }) => {
+    const user = { id: socket.id, username };
+    socket.username = username;
 
-    db.run("INSERT INTO user_logs (socket_id, country, language) VALUES (?, ?, ?)", [socket.id, country, language]);
+    waitingUsers = waitingUsers.filter(u => u.id !== socket.id);
 
-    socket.prefs = { gender, country, language, tagList };
-
-    const matchIndex = queue.findIndex(other => {
-      if (!other.prefs) return false;
-
-      const genderMatch = gender === "any" || other.prefs.gender === "any" || gender === other.prefs.gender;
-      const langMatch = language === "any" || other.prefs.language === "any" || language === other.prefs.language;
-      const countryMatch = country === "any" || other.prefs.country === "any" || country === other.prefs.country;
-      const tagMatch = tagList.some(tag => other.prefs.tagList.includes(tag));
-
-      return genderMatch && langMatch && countryMatch && (tagMatch || tagList.length === 0);
-    });
-
+    const matchIndex = waitingUsers.findIndex(u => u.id !== socket.id);
     if (matchIndex !== -1) {
-      const partner = queue.splice(matchIndex, 1)[0];
-      socket.partner = partner;
-      partner.partner = socket;
-      socket.emit("ready");
-      partner.emit("ready");
+      const matchUser = waitingUsers.splice(matchIndex, 1)[0];
+      const roomId = `${socket.id}#${matchUser.id}`;
+
+      socket.join(roomId);
+      io.to(matchUser.id).socketsJoin(roomId);
+
+      io.to(roomId).emit('match', {
+        roomId,
+        partnerInfo: { username: matchUser.username }
+      });
+      io.to(matchUser.id).emit('match', {
+        roomId,
+        partnerInfo: { username: user.username }
+      });
     } else {
-      queue.push(socket);
-      setTimeout(() => {
-        if (!socket.partner) {
-          const fallback = queue.find(s => s !== socket);
-          if (fallback) {
-            queue = queue.filter(s => s !== socket && s !== fallback);
-            socket.partner = fallback;
-            fallback.partner = socket;
-            socket.emit("ready");
-            fallback.emit("ready");
-          }
-        }
-      }, 10000);
+      waitingUsers.push(user);
     }
   });
 
-  socket.on("message", msg => {
-    if (socket.partner) socket.partner.emit("message", msg);
+  socket.on('leaveRoom', ({ roomId }) => {
+    socket.leave(roomId);
+    setTimeout(() => {
+      const user = { id: socket.id, username: socket.username || 'Anonymous' };
+      waitingUsers = waitingUsers.filter(u => u.id !== socket.id);
+      waitingUsers.push(user);
+    }, 100);
+    const other = getOtherUserInRoom(roomId, socket.id);
+    if (other) io.to(other).emit('strangerDisconnected');
   });
 
-  socket.on("offer", data => {
-    if (socket.partner) socket.partner.emit("offer", data);
+  socket.on('signal', ({ roomId, sdp, candidate }) => {
+    socket.to(roomId).emit('signal', { sdp, candidate });
   });
 
-  socket.on("answer", data => {
-    if (socket.partner) socket.partner.emit("answer", data);
+  socket.on('chatMessage', ({ roomId, message }) => {
+    socket.to(roomId).emit('chatMessage', { sender: 'Stranger', message });
   });
 
-  socket.on("ice-candidate", data => {
-    if (socket.partner) socket.partner.emit("ice-candidate", data);
-  });
-
-  socket.on("typing", () => {
-    if (socket.partner) socket.partner.emit("typing");
-  });
-
-  socket.on("report", () => {
-    if (socket.partner) {
-      db.run("INSERT INTO reports (reporter_id, reported_id) VALUES (?, ?)", [socket.id, socket.partner.id]);
-      socket.partner.disconnect();
-    }
-  });
-
-  socket.on("block", () => {
-    if (socket.partner) {
-      db.run("INSERT INTO blocks (blocker_id, blocked_id) VALUES (?, ?)", [socket.id, socket.partner.id]);
-      socket.partner.disconnect();
-    }
-  });
-
-  socket.on("disconnect", () => {
-    queue = queue.filter(s => s !== socket);
-    if (socket.partner) socket.partner.partner = null;
-    io.emit("onlineCount", io.engine.clientsCount);
+  socket.on('disconnect', () => {
+    onlineUsers--;
+    io.emit('userCount', onlineUsers);
+    waitingUsers = waitingUsers.filter(u => u.id !== socket.id);
   });
 });
 
-server.listen(3000, () => console.log("✅ Server running at http://localhost:3000"));
+server.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});

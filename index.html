@@ -1,21 +1,57 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Stranger Chat</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Stranger Video Chat</title>
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
-  <div id="videoChatContainer">
-    <video id="localVideo" autoplay muted></video>
-    <video id="remoteVideo" autoplay></video>
+  <div id="userCount">Users Online: 0</div>
+  <div id="home">
+    <h1>Connect with Strangers</h1>
+    <form id="preferences">
+      <input type="text" id="username" placeholder="Username" required/>
+      <button type="submit">Start Chat</button>
+    </form>
   </div>
-  <div id="chatControls">
-    <button id="startBtn">Start</button>
-    <button id="skipBtn">Skip</button>
-    <button id="stopBtn">Stop</button>
+
+  <div id="searching" class="hidden">
+    <h2>Searching for a stranger...</h2>
+    <div class="spinner"></div>
   </div>
+
+  <div id="chat" class="hidden">
+    <div id="connectedStatus"></div>
+    <div class="video-container">
+      <div style="position:relative; text-align:center;">
+        <div class="video-label">You</div>
+        <video id="localVideo" autoplay muted playsinline></video>
+        <div id="localMicIndicator" class="mic-ring"></div>
+      </div>
+      <div style="position:relative; text-align:center;">
+        <div class="video-label">Stranger</div>
+        <video id="remoteVideo" autoplay playsinline></video>
+      </div>
+    </div>
+
+    <div class="chat-box">
+      <div id="messages"></div>
+      <input id="messageInput" placeholder="Type a message..." />
+      <button id="sendBtn">Send</button>
+    </div>
+
+    <div class="actions">
+      <button id="skipBtn">Skip</button>
+      <button id="stopBtn">Stop</button>
+      <button id="reportBtn">Report</button>
+      <button id="blockBtn">Block</button>
+      <button id="muteBtn">Mute</button>
+    </div>
+  </div>
+
   <script src="/socket.io/socket.io.js"></script>
-  <script src="main.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>

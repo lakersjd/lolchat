@@ -1,25 +1,87 @@
+
 body {
-  font-family: Arial, sans-serif;
+  background: linear-gradient(to bottom, #003a5e, #0077b6);
+  font-family: 'Segoe UI', sans-serif;
+  color: white;
   text-align: center;
-  background: #111;
-  color: #fff;
 }
-#videoChatContainer {
+
+.hidden {
+  display: none;
+}
+
+.spinner {
+  margin: 20px auto;
+  width: 40px;
+  height: 40px;
+  border: 5px solid rgba(255, 255, 255, 0.2);
+  border-top: 5px solid #ffffff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.video-container {
+  margin-top: 30px;
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+}
+
+.video-label {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.mic-ring {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  width: 20px;
+  height: 20px;
+  border: 3px solid lime;
+  border-radius: 50%;
+  opacity: 0.3;
+  transition: opacity 0.2s ease;
+}
+
+.actions {
+  margin-top: 20px;
   display: flex;
   justify-content: center;
-  margin-top: 20px;
+  gap: 15px;
 }
-video {
-  width: 300px;
-  height: 225px;
-  margin: 0 10px;
-  background: #000;
-}
-#chatControls {
-  margin-top: 20px;
-}
-button {
+
+.actions button {
+  font-size: 18px;
   padding: 10px 20px;
-  margin: 5px;
+  border-radius: 10px;
+  font-weight: bold;
+  border: none;
   cursor: pointer;
+}
+
+#connectedStatus {
+  font-size: 20px;
+  margin-top: 15px;
+  color: lime;
+  transition: opacity 0.5s ease-in-out;
+}
+
+#chat.fade-out {
+  opacity: 0;
+}
+
+#userCount {
+  font-weight: bold;
+  font-size: 16px;
+  margin: 10px;
 }
